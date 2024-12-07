@@ -1,0 +1,97 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">我的好友</h4>
+                    <a href="{% url 'posts:friend_requests' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus"></i> 好友请求
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if friends %}
+                        {% for friend in friends %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                            <div class="d-flex align-items-center">
+                                <!-- 头像 -->
+                                {% if friend.userprofile.avatar %}
+                                    <img src="{{ friend.userprofile.avatar.url }}" 
+                                         class="rounded-circle me-3" 
+                                         alt="{{ friend.username }}"
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary me-3 d-flex align-items-center justify-content-center"
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- 用户信息 -->
+                                <div>
+                                    <h5 class="mb-1">
+                                        <a href="{% url 'posts:user_profile' friend.username %}" 
+                                           class="text-decoration-none text-dark">
+                                            {{ friend.username }}
+                                        </a>
+                                    </h5>
+                                    {% if friend.userprofile.bio %}
+                                        <small class="text-muted">{{ friend.userprofile.bio|truncatechars:50 }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- 操作按钮 -->
+                            <div>
+                                <a href="{% url 'posts:chat' friend.username %}" 
+                                   class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-comment"></i> 发消息
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#removeFriendModal{{ friend.id }}">
+                                    <i class="fas fa-user-minus"></i> 删除好友
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 删除好友确认对话框 -->
+                        <div class="modal fade" id="removeFriendModal{{ friend.id }}" tabindex="-1" 
+                             aria-labelledby="removeFriendModalLabel{{ friend.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="removeFriendModalLabel{{ friend.id }}">
+                                            确认删除好友
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        确定要删除好友 {{ friend.username }} 吗？删除后将无法查看聊天记录。
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                        <a href="{% url 'posts:remove_friend' friend.username %}" 
+                                           class="btn btn-danger">确认删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">您还没有好友</p>
+                            <a href="{% url 'posts:post_list' %}" class="btn btn-primary">
+                                去看看其他用户
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,235 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- 帖子内容 -->
+            <div class="card mb-4">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="card-title">{{ post.title }}</h2>
+                        <div>
+                            <!-- 收藏按钮 -->
+                            {% if user.is_authenticated %}
+                            <button class="btn {% if post in user.userprofile.bookmarks.all %}btn-warning{% else %}btn-outline-warning{% endif %} bookmark-button me-2"
+                                    data-post-id="{{ post.id }}">
+                                <i class="fas fa-bookmark"></i>
+                                <span>{% if post in user.userprofile.bookmarks.all %}已收藏{% else %}收藏{% endif %}</span>
+                            </button>
+                            {% endif %}
+                            
+                            <!-- 删除按钮（仅作者和超级用户可见） -->
+                            {% if user == post.author or user.is_superuser %}
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-muted">
+                        作者：<a href="{% url 'posts:user_profile' post.author.username %}" class="text-decoration-none">{{ post.author.username }}</a> | 
+                        发布时间：{{ post.created_at|date:"Y-m-d H:i" }}
+                    </p>
+                    <p class="card-text">{{ post.content }}</p>
+                    
+                    <!-- 点赞按钮 -->
+                    <div class="mb-3">
+                        <button class="btn {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} like-button"
+                                data-post-id="{{ post.id }}">
+                            <i class="fas fa-heart"></i> 
+                            <span class="like-count">{{ post.like_count }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 评论区 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4>评论</h4>
+                    {% if user.is_authenticated %}
+                        <form method="post" class="mb-4">
+                            {% csrf_token %}
+                            {{ comment_form.as_p }}
+                            <button type="submit" class="btn btn-primary">发表评论</button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted">请<a href="{% url 'admin:login' %}">登录</a>后发表评论</p>
+                    {% endif %}
+
+                    <!-- 评论列表 -->
+                    {% for comment in comments %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <a href="{% url 'posts:user_profile' comment.author.username %}" 
+                                       class="text-decoration-none text-dark fw-bold">
+                                        {{ comment.author.username }}
+                                    </a>
+                                    <small class="text-muted ms-2">
+                                        {{ comment.created_at|date:"Y-m-d H:i" }}
+                                    </small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    {% if user.is_authenticated %}
+                                    <!-- 点赞按钮 -->
+                                    <button class="btn btn-sm {% if user in comment.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} comment-like-button me-2"
+                                            data-comment-id="{{ comment.id }}">
+                                        <i class="fas fa-heart"></i> 
+                                        <span class="comment-like-count">{{ comment.like_count }}</span>
+                                    </button>
+                                    
+                                    <!-- 删除按钮（仅评论作者和超级用户可见） -->
+                                    {% if user == comment.author or user.is_superuser %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteCommentModal{{ comment.id }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">
+                                        <i class="far fa-heart"></i> {{ comment.like_count }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="card-text mb-0">{{ comment.content }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 删除评论确认对话框 -->
+                    {% if user == comment.author or user.is_superuser %}
+                    <div class="modal fade" id="deleteCommentModal{{ comment.id }}" tabindex="-1" 
+                         aria-labelledby="deleteCommentModalLabel{{ comment.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteCommentModalLabel{{ comment.id }}">确认删除评论</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    确定要删除这条评论吗？此操作不可撤销。
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <a href="{% url 'posts:delete_comment' comment.id %}" class="btn btn-danger">确认删除</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <p class="text-muted">暂无评论</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认对话框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确定要删除这篇帖子吗？此操作不可撤销。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <a href="{% url 'posts:delete_post' post.id %}" class="btn btn-danger">确认删除</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加收藏功能的JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 收藏功能
+    const bookmarkButton = document.querySelector('.bookmark-button');
+    if (bookmarkButton) {
+        bookmarkButton.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            fetch(`/post/${postId}/bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.bookmarked) {
+                    this.classList.remove('btn-outline-warning');
+                    this.classList.add('btn-warning');
+                    this.querySelector('span').textContent = '已收藏';
+                } else {
+                    this.classList.remove('btn-warning');
+                    this.classList.add('btn-outline-warning');
+                    this.querySelector('span').textContent = '收藏';
+                }
+            });
+        });
+    }
+
+    // 点赞功能
+    const likeButton = document.querySelector('.like-button');
+    if (likeButton) {
+        likeButton.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            fetch(`/post/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                } else {
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-outline-danger');
+                }
+                this.querySelector('.like-count').textContent = data.count;
+            });
+        });
+    }
+
+    // 评论点赞功能
+    const commentLikeButtons = document.querySelectorAll('.comment-like-button');
+    commentLikeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            fetch(`/comment/${commentId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                } else {
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-outline-danger');
+                }
+                this.querySelector('.comment-like-count').textContent = data.count;
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,77 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">我的聊天</h4>
+                    <a href="{% url 'posts:friend_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-users"></i> 好友列表
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if chats %}
+                        <div class="list-group list-group-flush">
+                            {% for chat in chats %}
+                            <a href="{% url 'posts:chat' chat.friend.username %}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <!-- 头像 -->
+                                        {% if chat.friend.userprofile.avatar %}
+                                            <img src="{{ chat.friend.userprofile.avatar.url }}" 
+                                                 class="rounded-circle me-3" 
+                                                 alt="{{ chat.friend.username }}"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary me-3 d-flex align-items-center justify-content-center"
+                                                 style="width: 50px; height: 50px;">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- 用户信息和最后消息 -->
+                                        <div>
+                                            <h5 class="mb-1">{{ chat.friend.username }}</h5>
+                                            {% if chat.last_message %}
+                                                <p class="mb-1 text-muted text-truncate" style="max-width: 300px;">
+                                                    {% if chat.last_message.sender == user %}
+                                                        你：{{ chat.last_message.content }}
+                                                    {% else %}
+                                                        {{ chat.last_message.content }}
+                                                    {% endif %}
+                                                </p>
+                                                <small class="text-muted">
+                                                    {{ chat.last_message.created_at|date:"m-d H:i" }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 未读消息数 -->
+                                    {% if chat.unread_count > 0 %}
+                                        <span class="badge bg-danger rounded-pill">
+                                            {{ chat.unread_count }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">暂无聊天记录</p>
+                            <a href="{% url 'posts:friend_list' %}" class="btn btn-primary">
+                                去找好友聊天
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

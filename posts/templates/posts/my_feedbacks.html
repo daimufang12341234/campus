@@ -1,0 +1,52 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>我的反馈</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'posts:submit_feedback' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 新建反馈
+            </a>
+        </div>
+    </div>
+
+    {% if feedbacks %}
+        {% for feedback in feedbacks %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge {% if feedback.status == 'pending' %}bg-warning
+                                     {% elif feedback.status == 'processing' %}bg-info
+                                     {% elif feedback.status == 'resolved' %}bg-success
+                                     {% else %}bg-secondary{% endif %}">
+                        {{ feedback.get_status_display }}
+                    </span>
+                    <small class="text-muted">{{ feedback.created_at|date:"Y-m-d H:i" }}</small>
+                </div>
+                <p class="card-text">{{ feedback.content }}</p>
+                {% if feedback.reply %}
+                <hr>
+                <div class="bg-light p-3 rounded">
+                    <p class="mb-1"><strong>管理员回复：</strong></p>
+                    <p class="mb-1">{{ feedback.reply }}</p>
+                    <small class="text-muted">
+                        回复时间：{{ feedback.replied_at|date:"Y-m-d H:i" }}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">您还没有提交过反馈</p>
+            <a href="{% url 'posts:submit_feedback' %}" class="btn btn-primary">
+                提交第一个反馈
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

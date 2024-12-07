@@ -1,0 +1,49 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h2>发布新帖子</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">标题</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.title.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">内容</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.content.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">图片</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.image.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">发布</button>
+                        <a href="{% url 'posts:post_list' %}" class="btn btn-secondary">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

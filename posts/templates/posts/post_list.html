@@ -1,0 +1,207 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<style>
+.post-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.post-image {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.no-image-placeholder {
+    height: 200px;
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.search-bar {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.search-input {
+    border-radius: 25px;
+    padding-left: 20px;
+    border: 1px solid #ced4da;
+}
+
+.search-button {
+    border-radius: 25px;
+    padding: 8px 25px;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+    padding: 40px 0;
+    margin-bottom: 30px;
+    border-radius: 15px;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+}
+
+.pagination .page-link {
+    border-radius: 50%;
+    margin: 0 5px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state {
+    padding: 60px 0;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 5rem;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+</style>
+
+<div class="container">
+    <!-- 页面头部 -->
+    <div class="page-header text-center mb-4">
+        <h1 class="display-4 mb-3">校园生活分享</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form class="search-bar" method="get">
+                    <div class="input-group">
+                        <input type="search" name="q" class="form-control search-input" 
+                               placeholder="搜索帖子..." value="{{ query }}" aria-label="Search">
+                        <button class="btn btn-primary search-button" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索结果提示 -->
+    {% if query %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-search me-2"></i>
+        搜索 "{{ query }}" 的结果：找到 {{ page_obj.paginator.count }} 个帖子
+    </div>
+    {% endif %}
+
+    <!-- 帖子列表 -->
+    <div class="row g-4">
+        {% if posts %}
+            {% for post in posts %}
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm post-card">
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" class="post-image" alt="{{ post.title }}">
+                    {% else %}
+                    <div class="no-image-placeholder">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'posts:post_detail' post.id %}" 
+                               class="text-decoration-none text-dark stretched-link">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ post.content|truncatechars:100 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{% if post.author.userprofile.avatar %}{{ post.author.userprofile.avatar.url }}{% else %}https://via.placeholder.com/30{% endif %}" 
+                                     class="rounded-circle me-2" 
+                                     alt="{{ post.author.username }}"
+                                     style="width: 30px; height: 30px; object-fit: cover;">
+                                <small class="text-muted">{{ post.author.username }}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted me-3">
+                                    <i class="far fa-clock me-1"></i>
+                                    {{ post.created_at|date:"m-d H:i" }}
+                                </small>
+                                <small class="text-danger">
+                                    <i class="fas fa-heart me-1"></i>
+                                    {{ post.like_count }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-inbox mb-4"></i>
+                    <h3>暂无帖子</h3>
+                    {% if user.is_authenticated %}
+                        <p class="text-muted mb-4">来分享第一个帖子吧！</p>
+                        <a href="{% url 'posts:post_create' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>发布帖子
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-4">登录后即可发布帖子</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>登录
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 分页导航 -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 

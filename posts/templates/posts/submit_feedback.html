@@ -1,0 +1,31 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h2 class="mb-0">提交反馈</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">反馈内容</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.content.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">提交反馈</button>
+                        <a href="{% url 'posts:my_feedbacks' %}" class="btn btn-secondary">查看我的反馈</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,74 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- 收到的好友请求 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">收到的好友请求</h4>
+                </div>
+                <div class="card-body">
+                    {% if received_requests %}
+                        {% for request in received_requests %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <a href="{% url 'posts:user_profile' request.from_user.username %}" 
+                                   class="text-decoration-none">
+                                    {{ request.from_user.username }}
+                                </a>
+                                <small class="text-muted d-block">
+                                    {{ request.created_at|date:"Y-m-d H:i" }}
+                                </small>
+                            </div>
+                            <div>
+                                <a href="{% url 'posts:handle_friend_request' request.id 'accept' %}" 
+                                   class="btn btn-success btn-sm">接受</a>
+                                <a href="{% url 'posts:handle_friend_request' request.id 'reject' %}" 
+                                   class="btn btn-danger btn-sm">拒绝</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">暂无收到的好友请求</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 发送的好友请求 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">发送的好友请求</h4>
+                </div>
+                <div class="card-body">
+                    {% if sent_requests %}
+                        {% for request in sent_requests %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <a href="{% url 'posts:user_profile' request.to_user.username %}" 
+                                   class="text-decoration-none">
+                                    {{ request.to_user.username }}
+                                </a>
+                                <small class="text-muted d-block">
+                                    {{ request.created_at|date:"Y-m-d H:i" }}
+                                </small>
+                                <span class="badge {% if request.status == 'pending' %}bg-warning
+                                                  {% elif request.status == 'accepted' %}bg-success
+                                                  {% else %}bg-danger{% endif %}">
+                                    {{ request.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">暂无发送的好友请求</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
