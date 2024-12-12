@@ -1,0 +1,40 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">我的收藏</h2>
+    <div class="row">
+        {% if posts %}
+            {% for post in posts %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" 
+                         style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'posts:post_detail' post.id %}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text">{{ post.content|truncatewords:30 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">{{ post.author.username }}</small>
+                            <small class="text-muted">{{ post.created_at|date:"Y-m-d H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">暂无收藏的帖子</p>
+                <a href="{% url 'posts:post_list' %}" class="btn btn-primary">浏览帖子</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

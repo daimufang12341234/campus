@@ -1,0 +1,191 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">发布帖子</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="postForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">选择分类</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">标题</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">内容</label>
+                            {{ form.content }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">图片（可选）</label>
+                            <input type="file" class="form-control" id="imageInput" accept="image/*">
+                            <input type="hidden" name="cropped_image" id="croppedImage">
+                        </div>
+
+                        <!-- 图片裁切区域 -->
+                        <div id="cropperContainer" style="display: none;">
+                            <div class="mb-3">
+                                <div style="max-height: 500px; overflow: hidden;">
+                                    <img id="imagePreview" src="" style="max-width: 100%;">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-secondary" id="cancelCrop">取消</button>
+                                    <button type="button" class="btn btn-primary" id="confirmCrop">确定</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 裁切后的预览 -->
+                        <div id="finalPreview" class="mb-3" style="display: none;">
+                            <img id="finalImage" src="" class="img-fluid" style="width: 200px; height: 200px; object-fit: cover;">
+                            <button type="button" class="btn btn-sm btn-danger mt-2" id="removeImage">
+                                <i class="fas fa-times"></i> 移除图片
+                            </button>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> 发布
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let cropper = null;
+    const imageInput = document.getElementById('imageInput');
+    const cropperContainer = document.getElementById('cropperContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const croppedImage = document.getElementById('croppedImage');
+    const finalPreview = document.getElementById('finalPreview');
+    const finalImage = document.getElementById('finalImage');
+    const cancelCropBtn = document.getElementById('cancelCrop');
+    const confirmCropBtn = document.getElementById('confirmCrop');
+    const removeImageBtn = document.getElementById('removeImage');
+    const postForm = document.getElementById('postForm');
+
+    // 处理图片选择
+    imageInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            // 检查文件大小
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                alert('图片大小不能超过5MB');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                cropperContainer.style.display = 'block';
+                finalPreview.style.display = 'none';
+                
+                // 销毁现有的裁切器
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                // 初始化裁切器
+                cropper = new Cropper(imagePreview, {
+                    aspectRatio: 1, // 使用1:1的比例
+                    viewMode: 2,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    minContainerWidth: 300,
+                    minContainerHeight: 300,
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 取消裁切
+    cancelCropBtn.addEventListener('click', function() {
+        cropperContainer.style.display = 'none';
+        imageInput.value = '';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    });
+
+    // 确认裁切
+    confirmCropBtn.addEventListener('click', function() {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 800,   // 输出图片宽度
+            height: 800,  // 输出图片高度
+            imageSmoothingQuality: 'high'
+        });
+
+        canvas.toBlob(function(blob) {
+            // 将裁切后的图片转换为 base64
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = function() {
+                croppedImage.value = reader.result;
+            }
+
+            // 显示预览
+            finalImage.src = URL.createObjectURL(blob);
+            finalPreview.style.display = 'block';
+            cropperContainer.style.display = 'none';
+            
+            // 清理裁切器
+            cropper.destroy();
+            cropper = null;
+        }, 'image/jpeg', 0.9);
+    });
+
+    // 移除图片
+    removeImageBtn.addEventListener('click', function() {
+        imageInput.value = '';
+        croppedImage.value = '';
+        finalPreview.style.display = 'none';
+    });
+
+    // 表单提交前验证
+    postForm.addEventListener('submit', function(e) {
+        const title = postForm.querySelector('[name="title"]').value.trim();
+        const content = postForm.querySelector('[name="content"]').value.trim();
+        const category = postForm.querySelector('[name="category"]').value;
+        const croppedImageData = document.getElementById('croppedImage').value;
+
+        if (!category) {
+            e.preventDefault();
+            alert('请选择帖子分类');
+            return;
+        }
+
+        if (!title && !content && !croppedImageData) {
+            e.preventDefault();
+            alert('请至少填写标题、内容或上传图片中的一项');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %} 

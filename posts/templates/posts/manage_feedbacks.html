@@ -1,0 +1,44 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">管理用户反馈</h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>用户</th>
+                    <th>反馈内容</th>
+                    <th>提交时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feedback in feedbacks %}
+                <tr>
+                    <td>{{ feedback.user.username }}</td>
+                    <td>{{ feedback.content|truncatechars:50 }}</td>
+                    <td>{{ feedback.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <span class="badge {% if feedback.status == 'pending' %}bg-warning
+                                         {% elif feedback.status == 'processing' %}bg-info
+                                         {% elif feedback.status == 'resolved' %}bg-success
+                                         {% else %}bg-secondary{% endif %}">
+                            {{ feedback.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'posts:reply_feedback' feedback.id %}" 
+                           class="btn btn-sm btn-primary">
+                            {% if feedback.reply %}编辑回复{% else %}回复{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

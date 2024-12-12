@@ -1,0 +1,260 @@
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.category-nav {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.post-image {
+    height: 200px;
+    object-fit: cover;
+}
+
+.post-content {
+    max-height: 100px;
+    overflow: hidden;
+}
+
+footer {
+    margin-top: auto;
+    background-color: #ffffff;
+    box-shadow: 0 -2px 4px rgba(0,0,0,.05);
+}
+
+.nav-pills .nav-link {
+    color: #6c757d;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #4caf50;
+}
+
+.btn-primary {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.btn-primary:hover {
+    background-color: #388e3c;
+    border-color: #388e3c;
+}
+
+/* 热度榜固定效果 */
+.position-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 1rem;
+    z-index: 1;
+}
+
+.hot-posts {
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
+/* 热度榜样式 */
+.sticky-top {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 1rem;
+    z-index: 1020;
+}
+
+.hot-posts .card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.hot-posts a {
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.hot-posts a:hover {
+    color: #66bb6a;
+}
+
+/* 帖子图片样式 */
+.post-image-container {
+    position: relative;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.post-image {
+    transition: transform 0.3s ease;
+}
+
+.post-image:hover {
+    transform: scale(1.05);
+}
+
+/* 帖子详情页图片样式 */
+.post-detail .post-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* 表白墙特殊样式 */
+.confession-page {
+    background: linear-gradient(135deg, #ffe6e6, #fff0f5) !important;
+}
+
+.confession-page .card {
+    border-radius: 15px !important;
+    border: 1px solid rgba(255, 64, 129, 0.1) !important;
+    box-shadow: 0 4px 15px rgba(255, 64, 129, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    transition: all 0.3s ease !important;
+}
+
+.confession-page .card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(255, 64, 129, 0.2) !important;
+}
+
+.confession-page .card-title {
+    color: #ff4081 !important;
+}
+
+.confession-page .btn-primary {
+    background-color: #ff4081 !important;
+    border-color: #ff4081 !important;
+}
+
+.confession-page .btn-primary:hover {
+    background-color: #f50057 !important;
+    border-color: #f50057 !important;
+}
+
+.confession-page .nav-pills .nav-link.active {
+    background-color: #ff4081 !important;
+}
+
+.confession-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #ff4081;
+    position: relative;
+    z-index: 1;
+}
+
+.confession-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(255, 64, 129, 0.2);
+}
+
+/* 飘动的爱心 */
+.floating-hearts {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.heart {
+    position: absolute;
+    color: rgba(255, 64, 129, 0.3);
+    animation: float-heart 6s linear infinite;
+}
+
+@keyframes float-heart {
+    0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* 表白墙导航按钮全局样式 - 增加优先级 */
+.category-nav .nav-pills .nav-link[href*="category=confession"] {
+    background-color: #ff4081 !important;
+    color: white !important;
+    border: 2px solid #ff4081 !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+    font-weight: bold !important;
+}
+
+.category-nav .nav-pills .nav-link[href*="category=confession"]:not(.active) {
+    background-color: white !important;
+    color: #ff4081 !important;
+    border-color: #ff4081 !important;
+}
+
+.category-nav .nav-pills .nav-link[href*="category=confession"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3);
+    background-color: #f50057 !important;
+    color: white !important;
+}
+
+.category-nav .nav-pills .nav-link[href*="category=confession"].active {
+    background-color: #ff4081 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3);
+}
+
+.category-nav .nav-pills .nav-link[href*="category=confession"] .fa-heart {
+    color: inherit;
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+.category-nav .nav-pills .nav-link[href*="category=confession"]:hover .fa-heart {
+    transform: scale(1.2);
+}
+
+/* 添加爱心动画效果 */
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.category-nav .nav-pills .nav-link[href*="category=confession"].active .fa-heart {
+    animation: heartbeat 1s infinite;
+}
+
+/* 覆盖其他可能的样式 */
+.nav-pills .nav-link[href*="category=confession"]:focus,
+.nav-pills .nav-link[href*="category=confession"]:active {
+    background-color: #ff4081 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3) !important;
+} 

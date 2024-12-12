@@ -1,0 +1,576 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>校园生活分享</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Font Awesome 5 Free';
+            font-style: normal;
+            font-weight: 900;
+            font-display: block;
+            src: url("{% static 'webfonts/fa-solid-900.woff2' %}") format("woff2"),
+                 url("{% static 'webfonts/fa-solid-900.woff' %}") format("woff"),
+                 url("{% static 'webfonts/fa-solid-900.ttf' %}") format("truetype");
+        }
+    </style>
+    <link href="{% static 'css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        /* CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 通用样式优化 */
+        body {
+            background: linear-gradient(135deg, #f8faf6, #e8f5e9);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #66bb6a !important;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 导航栏文字和按钮样式 */
+        .navbar .navbar-brand,
+        .navbar .nav-link {
+            color: white !important;
+            text-shadow: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background: none !important;
+        }
+
+        /* 下拉菜单按钮特殊样式 */
+        .navbar .dropdown-toggle::after {
+            border-top-color: white;
+        }
+
+        /* 下拉菜单样式 */
+        .dropdown-menu {
+            background-color: white !important;
+            border: none !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 0.5rem 0;
+            backdrop-filter: none !important;
+        }
+        
+        .dropdown-item {
+            color: #333 !important;
+            padding: 0.7rem 1.5rem;
+            transition: all 0.3s ease;
+            background-color: transparent !important;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(102, 187, 106, 0.1) !important;
+            color: #4caf50 !important;
+        }
+
+        /* 移除所有可能的滤镜效果 */
+        .navbar *,
+        .navbar *::before,
+        .navbar *::after {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            filter: none !important;
+        }
+
+        /* 确保导航栏背景色纯净 */
+        .navbar,
+        .navbar-collapse {
+            background: #66bb6a !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .navbar-collapse {
+                background-color: #66bb6a !important;
+                border-radius: 10px;
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+
+            .nav-link {
+                text-align: center;
+                margin: 5px 0;
+            }
+        }
+
+        /* 卡片样式 */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            background-color: rgba(102, 187, 106, 0.1);
+            border-bottom: none;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #66bb6a;
+            border-color: #66bb6a;
+            color: white !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4caf50;
+            border-color: #4caf50;
+            color: white !important;
+        }
+
+        .btn i {
+            margin-right: 5px;
+        }
+
+        /* 徽章样式 */
+        .badge {
+            padding: 0.35em 0.65em;
+            font-weight: 600;
+            font-size: 0.75em;
+        }
+
+        /* 分类导航样式 */
+        .category-nav {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .category-nav .nav-pills .nav-link {
+            color: #66bb6a !important;
+            background-color: transparent;
+            margin: 0.25rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border: 1px solid #66bb6a;
+        }
+
+        .category-nav .nav-pills .nav-link:hover {
+            background-color: rgba(102, 187, 106, 0.1);
+        }
+
+        .category-nav .nav-pills .nav-link.active {
+            background-color: #66bb6a !important;
+            color: white !important;
+            border-color: #66bb6a;
+        }
+
+        /* 重置所有图标样式 */
+        .fas {
+            font-family: "Font Awesome 5 Free" !important;
+            font-style: normal !important;
+            font-weight: 900 !important;
+            font-display: block !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            -webkit-font-smoothing: antialiased !important;
+            display: inline-block !important;
+            text-rendering: auto !important;
+            speak: none !important;
+            font-variant: normal !important;
+            text-transform: none !important;
+            line-height: 1 !important;
+            background: none !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        /* 导航栏和下拉菜单图标间距 */
+        .nav-link .fas,
+        .dropdown-item .fas {
+            margin-right: 0.5rem !important;
+            display: inline-block !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* 下拉菜单图标颜色 */
+        .dropdown-item .fas {
+            color: #66bb6a !important;
+        }
+
+        /* 移除所有元素的背景滤镜 */
+        * {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        /* 确保导航栏文字颜色 */
+        .navbar-dark .navbar-nav .nav-link,
+        .navbar-dark .navbar-brand {
+            color: #ffffff !important;
+        }
+
+        /* 修复下拉菜单的背景色 */
+        .dropdown-menu,
+        .dropdown-item {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        /* 移除所有默认背景色 */
+        nav, div, a, button {
+            background-color: transparent;
+        }
+
+        /* 覆盖任何可能的Bootstrap默认样式 */
+        .custom-navbar.navbar-dark .navbar-nav .nav-link {
+            color: white !important;
+        }
+
+        .custom-navbar .navbar-toggler {
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .custom-navbar .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.7%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'posts:post_list' %}">
+                <i class="fas fa-home"></i> 校园生活分享
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:post_create' %}">
+                                <i class="fas fa-plus"></i> 发帖
+                            </a>
+                        </li>
+                        
+                        {% if user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:admin_dashboard' %}" style="color: #ff4081;">
+                                <i class="fas fa-chart-line"></i> 管理仪表盘
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:manage_users' %}">
+                                <i class="fas fa-users-cog"></i> 用户管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:manage_feedbacks' %}">
+                                <i class="fas fa-comments"></i> 用户反馈
+                                {% if pending_feedbacks_count > 0 %}
+                                <span class="badge bg-danger">{{ pending_feedbacks_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:friend_requests' %}">
+                                <i class="fas fa-user-friends"></i> 好友请求
+                                {% if friend_requests_count > 0 %}
+                                <span class="badge bg-danger">{{ friend_requests_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:chat_list' %}">
+                                <i class="fas fa-comments"></i> 私信
+                                {% if unread_messages_count > 0 %}
+                                <span class="badge bg-danger">{{ unread_messages_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                {% if user.userprofile.avatar %}
+                                    <img src="{{ user.userprofile.avatar.url }}" alt="avatar" 
+                                         class="rounded-circle me-1" style="width: 24px; height: 24px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user-circle"></i>
+                                {% endif %}
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'posts:user_profile' user.username %}">
+                                        <i class="fas fa-user"></i> 个人主页
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'posts:edit_profile' %}">
+                                        <i class="fas fa-cog"></i> 编辑资料
+                                    </a>
+                                </li>
+                                {% if user.is_staff %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'posts:admin_dashboard' %}" style="color: #ff4081;">
+                                        <i class="fas fa-chart-line"></i> 管理仪表盘
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'posts:manage_users' %}">
+                                        <i class="fas fa-users-cog"></i> 用户管理
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'posts:manage_feedbacks' %}">
+                                        <i class="fas fa-comments"></i> 用户反馈
+                                        {% if pending_feedbacks_count > 0 %}
+                                        <span class="badge bg-danger">{{ pending_feedbacks_count }}</span>
+                                        {% endif %}
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'posts:logout' %}">
+                                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">登录</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'posts:register' %}">注册</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 区分头像上传和帖子图片上传
+            var avatarInput = document.querySelector('input[name="avatar"]');
+            var postImageInput = document.querySelector('input[name="image"]');
+            
+            // 处理头像上传
+            if (avatarInput) {
+                var form = avatarInput.closest('form');
+                if (!form) return;  // 如果找不到表单就退出
+
+                var cropper;
+                var cropperContainer = document.createElement('div');
+                cropperContainer.style.display = 'none';
+                cropperContainer.innerHTML = `
+                    <div class="mb-3">
+                        <img id="cropperImage" style="max-width: 100%;">
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-secondary me-2" id="cancelCrop">取消</button>
+                        <button type="button" class="btn btn-primary" id="cropButton">确定</button>
+                    </div>
+                `;
+                form.appendChild(cropperContainer);
+
+                avatarInput.addEventListener('change', function(e) {
+                    var files = e.target.files;
+                    if (files && files.length > 0) {
+                        var file = files[0];
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var cropperImage = document.getElementById('cropperImage');
+                            cropperImage.src = e.target.result;
+                            cropperContainer.style.display = 'block';
+                            avatarInput.style.display = 'none';
+                            
+                            if (cropper) {
+                                cropper.destroy();
+                            }
+                            
+                            cropper = new Cropper(cropperImage, {
+                                aspectRatio: 1,
+                                viewMode: 2,
+                                dragMode: 'move',
+                                autoCropArea: 1,
+                                restore: false,
+                                guides: true,
+                                center: true,
+                                highlight: false,
+                                cropBoxMovable: true,
+                                cropBoxResizable: true,
+                                toggleDragModeOnDblclick: false,
+                            });
+                            
+                            document.getElementById('cancelCrop').addEventListener('click', function() {
+                                cropper.destroy();
+                                cropperContainer.style.display = 'none';
+                                avatarInput.style.display = 'block';
+                                avatarInput.value = '';
+                            });
+
+                            document.getElementById('cropButton').addEventListener('click', function() {
+                                var canvas = cropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 300
+                                });
+                                
+                                canvas.toBlob(function(blob) {
+                                    var formData = new FormData();
+                                    formData.append('avatar', blob, 'avatar.jpg');
+                                    
+                                    fetch('{% url "posts:upload_avatar" %}', {
+                                        method: 'POST',
+                                        body: formData,
+                                        headers: {
+                                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                        }
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            // 显示成功消息
+                                            var alert = document.createElement('div');
+                                            alert.className = 'alert alert-success';
+                                            alert.textContent = '头像上传成功！';
+                                            cropperContainer.parentElement.insertBefore(alert, cropperContainer);
+                                            
+                                            setTimeout(function() {
+                                                alert.remove();
+                                                // 延迟后刷新页面
+                                                window.location.reload(true);
+                                            }, 3000);
+
+                                            // 清理裁切器
+                                            cropper.destroy();
+                                            cropperContainer.style.display = 'none';
+                                            avatarInput.style.display = 'block';
+                                            avatarInput.value = '';
+                                        } else {
+                                            alert('上传失败：' + data.error);
+                                        }
+                                    });
+                                }, 'image/jpeg');
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            // 处理帖子图片预览
+            if (postImageInput) {
+                postImageInput.addEventListener('change', function(e) {
+                    if (this.files && this.files[0]) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var preview = document.getElementById('imagePreview');
+                            if (preview) {
+                                preview.src = e.target.result;
+                                preview.style.display = 'block';
+                            }
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        });
+    </script>
+    {% if notifications %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    (function() {
+        try {
+            var notificationsData = JSON.parse('{{ notifications_json|escapejs }}');
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                // 只显示最新的一条通知
+                if (notificationsData.length > 0) {
+                    const latestNotification = notificationsData[0];
+                    // 获取已显示的通知ID
+                    const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
+                    
+                    // 检查最新通知是否已经显示过
+                    if (!shownNotifications.includes(latestNotification.id)) {
+                        Swal.fire({
+                            title: latestNotification.title,
+                            text: latestNotification.content,
+                            icon: 'info',
+                            confirmButtonText: '确定',
+                            allowOutsideClick: false
+                        }).then(() => {
+                            // 记录已显示的通知
+                            shownNotifications.push(latestNotification.id);
+                            localStorage.setItem('shownNotifications', JSON.stringify(shownNotifications));
+                        });
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('通知显示错误:', error);
+        }
+    })();
+    </script>
+    {% endif %}
+</body>
+</html> 

@@ -1,0 +1,108 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">创建新账号</h2>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            用户名
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.username.errors }}
+                            </div>
+                        {% endif %}
+                        {% if form.username.help_text %}
+                            <small class="form-text text-muted">{{ form.username.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            电子邮箱
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            {{ form.email }}
+                        </div>
+                        {% if form.email.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.email.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            密码
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            {{ form.password1 }}
+                        </div>
+                        {% if form.password1.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.password1.errors }}
+                            </div>
+                        {% endif %}
+                        {% if form.password1.help_text %}
+                            <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            确认密码
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            {{ form.password2 }}
+                        </div>
+                        {% if form.password2.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.password2.errors }}
+                            </div>
+                        {% endif %}
+                        {% if form.password2.help_text %}
+                            <small class="form-text text-muted">{{ form.password2.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">注册</button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-0">已有账号？ 
+                        <a href="{% url 'login' %}" class="text-decoration-none">立即登录</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

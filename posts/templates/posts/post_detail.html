@@ -1,0 +1,255 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- 帖子内容 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% if post.image %}
+                    <div class="post-image-container mb-3">
+                        <img src="{{ post.image.url }}" class="img-fluid" alt="{{ post.title }}"
+                             style="max-width: 100%; max-height: 500px; object-fit: contain;">
+                    </div>
+                    {% endif %}
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2">
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-outline-warning btn-sm bookmark-button" data-post-id="{{ post.id }}">
+                                <i class="fas fa-bookmark"></i>
+                            </button>
+                            {% endif %}
+                            
+                            {% if user == post.author or user.is_superuser %}
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted small">
+                        <a href="{% url 'posts:user_profile' post.author.username %}" class="text-decoration-none">
+                            <i class="fas fa-user"></i> {{ post.author.username }}
+                        </a>
+                        <br>
+                        <i class="fas fa-clock"></i> {{ post.created_at|date:"Y-m-d H:i" }}
+                    </p>
+                    
+                    <p class="card-text post-content">{{ post.content }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button class="btn {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm like-button"
+                                data-post-id="{{ post.id }}">
+                            <i class="fas fa-heart"></i>
+                            <span class="like-count">{{ post.like_count }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 评论区 -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="h5 mb-4">评论</h3>
+                    
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'posts:add_comment' post.id %}" class="mb-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ comment_form.content }}
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">发表评论</button>
+                    </form>
+                    {% endif %}
+                    
+                    <div class="comments-list">
+                        {% for comment in post.comments.all %}
+                        <div class="comment-item border-bottom py-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ comment.author.username }}</strong>
+                                    <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                                {% if user == comment.author or user.is_superuser %}
+                                <button class="btn btn-danger btn-sm delete-comment-btn" data-comment-id="{{ comment.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            <p class="mb-2">{{ comment.content }}</p>
+                            <button class="btn btn-sm {% if user in comment.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} comment-like-button"
+                                    data-comment-id="{{ comment.id }}">
+                                <i class="fas fa-heart"></i>
+                                <span class="comment-like-count">{{ comment.likes.count }}</span>
+                            </button>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">暂无评论</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 在帖子内容后面添加删除模态框 -->
+{% if user == post.author or user.is_superuser %}
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这篇帖子吗？此操作不可恢复。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 在底部添加 JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 帖子点赞
+    const likeButton = document.querySelector('.like-button');
+    if (likeButton) {
+        likeButton.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            fetch(`/post/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                } else {
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-outline-danger');
+                }
+                this.querySelector('.like-count').textContent = data.count;
+            });
+        });
+    }
+
+    // 评论点赞
+    document.querySelectorAll('.comment-like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            fetch(`/comment/${commentId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                } else {
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-outline-danger');
+                }
+                this.querySelector('.comment-like-count').textContent = data.likes_count;
+            });
+        });
+    });
+
+    // 删除评论
+    document.querySelectorAll('.delete-comment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            if (confirm('确定要删除这条评论吗？')) {
+                fetch(`/comment/${commentId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.closest('.comment-item').remove();
+                    } else {
+                        alert('删除失败：' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('删除失败，请重试');
+                });
+            }
+        });
+    });
+
+    // 收藏功能
+    const bookmarkButton = document.querySelector('.bookmark-button');
+    if (bookmarkButton) {
+        bookmarkButton.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            fetch(`/post/${postId}/bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.bookmarked) {
+                    this.classList.remove('btn-outline-warning');
+                    this.classList.add('btn-warning');
+                } else {
+                    this.classList.remove('btn-warning');
+                    this.classList.add('btn-outline-warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('操作失败，请重试');
+            });
+        });
+    }
+
+    // 删除帖子功能
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            fetch('/post/{{ post.id }}/delete/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '{% url "posts:post_list" %}';
+                } else {
+                    alert('删除失败：' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('删除失败，请重试');
+            });
+        });
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,213 @@
+{% extends 'posts/base.html' %}
+
+{% block extra_js %}
+<script>
+    // 删除帖子功能
+    document.querySelectorAll('.delete-post').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('确定要删除这篇帖子吗？')) {
+                const postId = this.dataset.postId;
+                fetch(`/post/${postId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.closest('.card').remove();
+                    } else {
+                        alert('删除失败：' + data.error);
+                    }
+                });
+            }
+        });
+    });
+
+    // 好友相关功能
+    function sendFriendRequest(username) {
+        fetch(`/friend-request/${username}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('发送好友请求失败：' + data.error);
+            }
+        });
+    }
+
+    function removeFriend(username) {
+        if (confirm('确定要删除这个好友吗？')) {
+            fetch(`/remove-friend/${username}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('删除好友失败：' + data.error);
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container">
+    <div class="row">
+        <!-- 个人信息卡片 -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <form method="post" enctype="multipart/form-data" class="avatar-form">
+                        {% csrf_token %}
+                        {% if profile_user.userprofile.avatar %}
+                            <img src="{{ profile_user.userprofile.avatar.url }}" 
+                                 class="rounded-circle mb-3 profile-avatar" 
+                                 data-avatar-id="{{ profile_user.id }}"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-6x mb-3 text-muted"></i>
+                        {% endif %}
+                        {% if user == profile_user %}
+                            <div class="mt-2">
+                                <label for="avatar-input" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-camera"></i> 更换头像
+                                </label>
+                                <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display: none;">
+                            </div>
+                        {% endif %}
+                    </form>
+                    <h4 class="card-title">{{ profile_user.username }}</h4>
+                    {% if profile_user.userprofile.bio %}
+                        <p class="text-muted">{{ profile_user.userprofile.bio }}</p>
+                    {% endif %}
+                    
+                    {% if user != profile_user %}
+                        {% if is_friend %}
+                            <button class="btn btn-outline-danger mb-2" onclick="removeFriend('{{ profile_user.username }}')">
+                                <i class="fas fa-user-minus"></i> 取消好友
+                            </button>
+                        {% else %}
+                            {% if friend_request %}
+                                <button class="btn btn-secondary mb-2" disabled>
+                                    <i class="fas fa-clock"></i> 请求已发送
+                                </button>
+                            {% else %}
+                                <button class="btn btn-primary mb-2" onclick="sendFriendRequest('{{ profile_user.username }}')">
+                                    <i class="fas fa-user-plus"></i> 添加好友
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                        <a href="{% url 'posts:chat' profile_user.username %}" class="btn btn-success">
+                            <i class="fas fa-comments"></i> 发送消息
+                        </a>
+                    {% else %}
+                        <a href="{% url 'posts:edit_profile' %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> 编辑资料
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 个人统计信息 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h5>{{ total_posts }}</h5>
+                            <small class="text-muted">帖子</small>
+                        </div>
+                        <div class="col">
+                            <h5>{{ total_likes }}</h5>
+                            <small class="text-muted">获赞</small>
+                        </div>
+                        <div class="col">
+                            <h5>{{ profile_user.userprofile.friends.count }}</h5>
+                            <small class="text-muted">好友</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个人详细信息 -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">详细信息</h5>
+                    {% if profile_user.userprofile.major %}
+                        <p class="mb-2">
+                            <i class="fas fa-graduation-cap text-muted me-2"></i>
+                            专业：{{ profile_user.userprofile.major }}
+                        </p>
+                    {% endif %}
+                    {% if profile_user.userprofile.grade %}
+                        <p class="mb-2">
+                            <i class="fas fa-user-graduate text-muted me-2"></i>
+                            年级：{{ profile_user.userprofile.grade }}
+                        </p>
+                    {% endif %}
+                    {% if profile_user.userprofile.birthday %}
+                        <p class="mb-2">
+                            <i class="fas fa-birthday-cake text-muted me-2"></i>
+                            生日：{{ profile_user.userprofile.birthday }}
+                        </p>
+                    {% endif %}
+                    <p class="mb-0">
+                        <i class="fas fa-clock text-muted me-2"></i>
+                        加入时间：{{ profile_user.date_joined|date:"Y-m-d" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户动态 -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-posts">
+                                <i class="fas fa-th-list"></i> 发布的帖子
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-likes">
+                                <i class="fas fa-heart"></i> 点赞的帖子
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-posts">
+                            {% for post in posts %}
+                                {% include 'posts/includes/post_card.html' %}
+                            {% empty %}
+                                <p class="text-center text-muted">暂无发布的帖子</p>
+                            {% endfor %}
+                        </div>
+                        <div class="tab-pane fade" id="pills-likes">
+                            {% for post in liked_posts %}
+                                {% include 'posts/includes/post_card.html' %}
+                            {% empty %}
+                                <p class="text-center text-muted">暂无点赞的帖子</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

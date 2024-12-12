@@ -1,0 +1,480 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+{% if category == 'confession' %}
+<style>
+    body {
+        background: linear-gradient(135deg, #ffe6e6, #fff0f5) !important;
+    }
+    
+    /* 导航栏样式 */
+    .category-nav {
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 15px !important;
+        padding: 1rem !important;
+        box-shadow: 0 4px 15px rgba(255, 64, 129, 0.1) !important;
+    }
+    
+    /* 所有导航按钮的基础样式 */
+    .nav-pills .nav-link {
+        margin: 0.25rem !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 10px !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    /* 表白墙按钮特殊样式 */
+    .nav-pills .nav-link[href*="category=confession"] {
+        background-color: #ff4081 !important;
+        color: white !important;
+        border: 2px solid #ff4081 !important;
+        font-weight: bold !important;
+    }
+    
+    .nav-pills .nav-link[href*="category=confession"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3) !important;
+        background-color: #f50057 !important;
+        border-color: #f50057 !important;
+    }
+    
+    /* 非激活状态 */
+    .nav-pills .nav-link[href*="category=confession"]:not(.active) {
+        background-color: white !important;
+        color: #ff4081 !important;
+    }
+    
+    /* 激活状态 */
+    .nav-pills .nav-link[href*="category=confession"].active {
+        background-color: #ff4081 !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3) !important;
+    }
+    
+    /* 其他按钮在表白墙页面的样式 */
+    .nav-pills .nav-link:not([href*="category=confession"]) {
+        color: #666 !important;
+        background-color: transparent !important;
+        border: 2px solid transparent !important;
+    }
+    
+    .nav-pills .nav-link:not([href*="category=confession"]):hover {
+        background-color: rgba(255, 64, 129, 0.1) !important;
+        color: #ff4081 !important;
+    }
+    
+    .nav-pills .nav-link:not([href*="category=confession"]).active {
+        background-color: rgba(255, 64, 129, 0.2) !important;
+        color: #ff4081 !important;
+    }
+    
+    .card {
+        border-radius: 15px !important;
+        border: 1px solid rgba(255, 64, 129, 0.1) !important;
+        box-shadow: 0 4px 15px rgba(255, 64, 129, 0.1) !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 8px 25px rgba(255, 64, 129, 0.2) !important;
+    }
+    
+    .card-title {
+        color: #ff4081 !important;
+    }
+    
+    .btn-primary {
+        background-color: #ff4081 !important;
+        border-color: #ff4081 !important;
+    }
+    
+    .btn-primary:hover {
+        background-color: #f50057 !important;
+        border-color: #f50057 !important;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #ff4081 !important;
+    }
+    
+    /* 飘动的爱心 */
+    .floating-hearts {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    .heart {
+        position: absolute;
+        color: rgba(255, 64, 129, 0.3);
+        animation: float-heart 6s linear infinite;
+    }
+    
+    @keyframes float-heart {
+        0% {
+            transform: translateY(100vh) scale(0);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100px) scale(1);
+            opacity: 0;
+        }
+    }
+</style>
+
+<!-- 飘动的爱心背景 -->
+<div class="floating-hearts" id="floatingHearts"></div>
+
+<!-- 表白墙头部 -->
+<div style="text-align: center; margin-bottom: 2rem; color: #ff4081; position: relative;">
+    <h2 style="font-size: 2.5rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(255, 64, 129, 0.2);">
+        <i class="fas fa-heart"></i> 表白墙 <i class="fas fa-heart"></i>
+    </h2>
+    <p class="text-muted">在这里传递你的心意...</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const heartsContainer = document.getElementById('floatingHearts');
+    const heartIcons = ['❤', '💕', '💗', '💓', '💖'];
+    
+    function createHeart() {
+        const heart = document.createElement('span');
+        heart.className = 'heart';
+        heart.textContent = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+        heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        heartsContainer.appendChild(heart);
+        
+        heart.addEventListener('animationend', function() {
+            heart.remove();
+        });
+    }
+    
+    setInterval(createHeart, 300);
+});
+</script>
+{% endif %}
+
+<div class="container">
+    <div class="row">
+        <!-- 热度榜 -->
+        <div class="col-md-3">
+            <div class="sticky-top" style="top: 1rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">热度榜</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            {% for hot_post in hot_posts %}
+                            <li class="mb-2">
+                                <a href="{% url 'posts:post_detail' hot_post.id %}" class="text-decoration-none">
+                                    <span class="text-muted me-2">#{{ forloop.counter }}</span>
+                                    {{ hot_post.title }}
+                                    <small class="text-muted">({{ hot_post.views }}浏览)</small>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="col-md-9">
+            <!-- 分类导航 -->
+            <div class="category-nav mb-4">
+                <nav class="nav nav-pills">
+                    <a class="nav-link {% if category == 'all' %}active{% endif %}" 
+                       href="{% url 'posts:post_list' %}{% if search_query %}?q={{ search_query }}{% endif %}">
+                        最新墙
+                    </a>
+                    {% for cat_value, cat_name in post_categories %}
+                    <a class="nav-link {% if category == cat_value %}active{% endif %} 
+                       {% if cat_value == 'confession' %}confession-nav-link{% endif %}"
+                       href="{% url 'posts:post_list' %}?category={{ cat_value }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                       {% if cat_value == 'confession' %}
+                           <i class="fas fa-heart" style="margin-right: 4px;"></i>
+                       {% endif %}
+                       {{ cat_name }}
+                    </a>
+                    {% endfor %}
+                </nav>
+            </div>
+
+            <!-- 添加自定义样式 -->
+            <style>
+                .refresh-container {
+                    position: relative;
+                    overflow: hidden;
+                    min-height: calc(100vh - 56px);
+                    padding-top: 60px;
+                }
+                
+                .refresh-indicator {
+                    display: none;
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%) scale(0.8);
+                    top: 10px;
+                    color: #4caf50;
+                    text-align: center;
+                    padding: 10px;
+                    background: rgba(255, 255, 255, 0.95);
+                    border-radius: 20px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    transition: transform 0.3s ease;
+                    z-index: 1000;
+                    width: auto;
+                    min-width: 120px;
+                }
+                
+                .refresh-spinner {
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    border: 2.5px solid #4caf50;
+                    border-radius: 50%;
+                    border-top-color: transparent;
+                    animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                    margin-right: 8px;
+                    vertical-align: middle;
+                    transform-origin: center center;
+                }
+                
+                .refresh-text {
+                    vertical-align: middle;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    opacity: 0.9;
+                    white-space: nowrap;
+                }
+                
+                @keyframes spin {
+                    from {
+                        transform: rotate(0deg);
+                    }
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
+                
+                @keyframes slideDown {
+                    from {
+                        transform: translateY(-150%) scale(0.8);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0) scale(1);
+                        opacity: 1;
+                    }
+                }
+                
+                .refresh-indicator.show {
+                    display: block;
+                    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                
+                .refresh-indicator.refreshing {
+                    transform: translateX(-50%) scale(1);
+                }
+                
+                .refresh-container .container {
+                    padding-top: 0;
+                }
+            </style>
+
+            <div class="refresh-container">
+                <!-- 下拉刷新指示器 -->
+                <div class="refresh-indicator">
+                    <div class="refresh-spinner"></div>
+                    <span class="refresh-text">下拉刷新...</span>
+                </div>
+
+                <div class="container">
+                    <!-- 搜索栏 -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <form class="search-bar" method="get">
+                                <div class="input-group">
+                                    <input type="text" name="q" class="form-control" placeholder="搜索帖子..." value="{{ request.GET.q }}">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 子列表 -->
+                    <div class="row">
+                        {% for post in posts %}
+                        <div class="col-12 col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                {% if post.image %}
+                                <div class="post-image-container">
+                                    <img src="{{ post.image.url }}" class="card-img-top post-image" alt="{{ post.title }}"
+                                         style="width: 100%; height: 200px; object-fit: cover;">
+                                </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    {% if post.title %}
+                                        <h5 class="card-title">{{ post.title }}</h5>
+                                    {% endif %}
+                                    <p class="card-text text-muted small">
+                                        <i class="fas fa-user"></i> {{ post.author.username }}
+                                        <br>
+                                        <i class="fas fa-clock"></i> {{ post.created_at|date:"Y-m-d H:i" }}
+                                    </p>
+                                    {% if post.content %}
+                                        <p class="card-text post-content">{{ post.content|truncatewords:30 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{% url 'posts:post_detail' post.id %}" class="btn btn-primary btn-sm">
+                                            阅读更多
+                                        </a>
+                                        <div>
+                                            <span class="text-muted">
+                                                <i class="fas fa-heart"></i> {{ post.like_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 分页 -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center flex-wrap">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let container = document.querySelector('.refresh-container');
+                let indicator = document.querySelector('.refresh-indicator');
+                let indicatorText = document.querySelector('.refresh-text');
+                let spinner = document.querySelector('.refresh-spinner');
+                let startY = 0;
+                let refreshThreshold = 80;
+                let isDragging = false;
+                let isRefreshing = false;
+                let lastY = 0;
+                let velocity = 0;
+                
+                container.addEventListener('touchstart', function(e) {
+                    if (window.scrollY === 0 && !isRefreshing) {
+                        startY = e.touches[0].pageY;
+                        lastY = startY;
+                        isDragging = true;
+                        indicator.classList.add('show');
+                    }
+                });
+                
+                container.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+                    
+                    let currentY = e.touches[0].pageY;
+                    velocity = currentY - lastY;
+                    lastY = currentY;
+                    let diff = currentY - startY;
+                    
+                    if (diff > 0) {
+                        e.preventDefault();
+                        let moveY = Math.min(diff/2.5, refreshThreshold);
+                        let progress = moveY / refreshThreshold;
+                        container.style.transform = `translateY(${moveY}px)`;
+                        indicator.style.transform = `translateX(-50%) scale(${0.8 + (0.2 * progress)})`;
+                        
+                        if (diff > refreshThreshold) {
+                            indicatorText.textContent = '松开刷新';
+                            spinner.style.opacity = '1';
+                        } else {
+                            indicatorText.textContent = '下拉刷新';
+                            spinner.style.opacity = Math.max(0.3, Math.min(diff / refreshThreshold, 1));
+                        }
+                    }
+                });
+                
+                container.addEventListener('touchend', function(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    
+                    let currentY = e.changedTouches[0].pageY;
+                    let diff = currentY - startY;
+                    
+                    if (diff > refreshThreshold) {
+                        isRefreshing = true;
+                        indicatorText.textContent = '正在刷新...';
+                        spinner.style.opacity = '1';
+                        indicator.classList.add('refreshing');
+                        
+                        // 刷新页面
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 800); // 增加动画时间
+                    } else {
+                        // 重置位置
+                        container.style.transform = '';
+                        indicator.classList.remove('show');
+                        indicator.classList.remove('refreshing');
+                        spinner.style.opacity = '0';
+                    }
+                    
+                    container.style.transition = `transform ${Math.abs(velocity) > 10 ? '0.5s' : '0.3s'} cubic-bezier(0.4, 0, 0.2, 1)`;
+                    container.style.transform = '';
+                    setTimeout(() => {
+                        container.style.transition = '';
+                    }, 300);
+                });
+            });
+            </script>
+        </div>
+    </div>
+</div>
+
+<!-- 页脚 -->
+<footer class="text-center mt-5 py-3">
+    <a href="https://beian.miit.gov.cn" target="_blank" class="text-muted">
+        ICP备2024148730号
+    </a>
+</footer>
+{% endblock %} 

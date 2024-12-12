@@ -1,0 +1,39 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">我的反馈</h4>
+                    <a href="{% url 'posts:submit_feedback' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> 新反馈
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% for feedback in feedbacks %}
+                    <div class="border-bottom mb-3 pb-3">
+                        <p class="mb-1">{{ feedback.content }}</p>
+                        <small class="text-muted">
+                            提交时间：{{ feedback.created_at|date:"Y-m-d H:i" }}
+                        </small>
+                        {% if feedback.reply %}
+                        <div class="bg-light p-3 mt-2 rounded">
+                            <p class="mb-1"><strong>管理员回复：</strong></p>
+                            <p class="mb-1">{{ feedback.reply }}</p>
+                            <small class="text-muted">
+                                回复时间：{{ feedback.replied_at|date:"Y-m-d H:i" }}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-muted">暂无反馈记录</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

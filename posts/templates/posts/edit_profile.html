@@ -1,0 +1,91 @@
+{% extends 'posts/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">编辑个人资料</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- 头像预览和上传 -->
+                        <div class="mb-3">
+                            <label class="form-label">头像</label>
+                            <div class="d-flex align-items-center gap-3">
+                                {% if form.instance.avatar %}
+                                <img src="{{ form.instance.avatar.url }}" alt="当前头像" 
+                                     class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                {% endif %}
+                                {{ form.avatar }}
+                            </div>
+                        </div>
+
+                        <!-- 个人简介 -->
+                        <div class="mb-3">
+                            <label class="form-label">个人简介</label>
+                            {{ form.bio }}
+                        </div>
+
+                        <!-- 生日 -->
+                        <div class="mb-3">
+                            <label class="form-label">生日</label>
+                            {{ form.birthday }}
+                        </div>
+
+                        <!-- 专业 -->
+                        <div class="mb-3">
+                            <label class="form-label">专业</label>
+                            {{ form.major }}
+                        </div>
+
+                        <!-- 年级 -->
+                        <div class="mb-3">
+                            <label class="form-label">年级</label>
+                            {{ form.grade }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.querySelector('input[type="file"]');
+    const previewContainer = avatarInput.parentElement;
+    
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('头像图片不能超过5MB');
+                avatarInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let preview = previewContainer.querySelector('img');
+                if (!preview) {
+                    preview = document.createElement('img');
+                    preview.classList.add('rounded-circle');
+                    preview.style.width = '100px';
+                    preview.style.height = '100px';
+                    preview.style.objectFit = 'cover';
+                    previewContainer.insertBefore(preview, avatarInput);
+                }
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,245 @@
+{% extends 'posts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4" style="color: #ff4081;">
+                <i class="fas fa-chart-line"></i> 管理员仪表盘
+            </h2>
+            
+            <!-- 统计图表 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">最近30天统计</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 发布通知 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">发布系统通知</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'posts:create_notification' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="title" class="form-label">标题</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">内容</label>
+                            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 发布通知
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 通知列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">当前通知</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for notification in notifications %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ notification.title }}</h6>
+                                <div>
+                                    <form method="post" action="{% url 'posts:toggle_notification' notification.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm {% if notification.is_active %}btn-success{% else %}btn-secondary{% endif %}">
+                                            {% if notification.is_active %}激活{% else %}停用{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <p class="mb-1">{{ notification.content }}</p>
+                            <small class="text-muted">{{ notification.created_at|date:"Y-m-d H:i" }}</small>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center my-3">暂无通知</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入 Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        // 解析图表数据
+        const chartData = JSON.parse('{{ chart_data|escapejs }}');
+        
+        // 统计图表
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: '访问人数',
+                    data: chartData.visits,
+                    borderColor: '#4caf50',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.1
+                }, {
+                    label: '发帖数量',
+                    data: chartData.posts,
+                    borderColor: '#2196f3',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.1
+                }, {
+                    label: '新用户数量',
+                    data: chartData.new_users,
+                    borderColor: '#ff9800',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // 通知状态切换
+        document.querySelectorAll('.toggle-notification').forEach(button => {
+            button.addEventListener('click', function() {
+                const notificationId = this.dataset.notificationId;
+                fetch(`/notification/${notificationId}/toggle/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.classList.toggle('btn-success');
+                        this.classList.toggle('btn-secondary');
+                        this.textContent = data.is_active ? '激活' : '停用';
+                    }
+                });
+            });
+        });
+    } catch (error) {
+        console.error('图表初始化失败:', error);
+        const chartContainer = document.getElementById('statsChart').parentElement;
+        chartContainer.innerHTML = '<div class="alert alert-danger">加载统计图表失败</div>';
+    }
+});
+</script>
+
+<!-- 添加通知提交处理脚本 -->
+<script>
+document.getElementById('notificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "posts:create_notification" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 清空表单
+            this.reset();
+            
+            // 添加新通知到列表
+            const notificationsList = document.querySelector('.list-group');
+            const newNotification = document.createElement('div');
+            newNotification.className = 'list-group-item';
+            newNotification.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-1">${data.notification.title}</h6>
+                    <div>
+                        <button class="btn btn-sm btn-success toggle-notification" data-notification-id="${data.notification.id}">
+                            激活
+                        </button>
+                    </div>
+                </div>
+                <p class="mb-1">${data.notification.content}</p>
+                <small class="text-muted">${data.notification.created_at}</small>
+            `;
+            
+            if (notificationsList.querySelector('.list-group-item')) {
+                notificationsList.insertBefore(newNotification, notificationsList.firstChild);
+            } else {
+                notificationsList.innerHTML = '';
+                notificationsList.appendChild(newNotification);
+            }
+            
+            // 显示成功消息
+            Swal.fire({
+                title: '成功',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: '确定'
+            });
+            
+            // 刷新页面以更新通知状态
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            // 显示错误消息
+            Swal.fire({
+                title: '错误',
+                text: data.message,
+                icon: 'error',
+                confirmButtonText: '确定'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: '错误',
+            text: '发布通知时出错，请重试',
+            icon: 'error',
+            confirmButtonText: '确定'
+        });
+    });
+});
+</script>
+
+<!-- 引入 SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %} 
